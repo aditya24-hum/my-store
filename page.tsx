@@ -1,57 +1,93 @@
 import { supabase, Product } from '@/lib/supabase'
-import ProductCard from '@/components/ProductCard'
+import { notFound } from 'next/navigation'
+import Image from 'next/image'
+import AddToCartButton from '@/components/AddToCartButton'
+import Link from 'next/link'
 
-async function getProducts(): Promise<Product[]> {
+async function getProduct(id: string): Promise<Product | null> {
   const { data, error } = await supabase
     .from('products')
     .select('*')
-    .order('created_at', { ascending: false })
-  if (error) return []
-  return data || []
+    .eq('id', id)
+    .single()
+  if (error) return null
+  return data
 }
 
-export default async function ProductsPage() {
-  const products = await getProducts()
-  const categories = ['All', ...Array.from(new Set(products.map(p => p.category).filter(Boolean)))]
+export default async function ProductDetailPage({ params }: { params: { id: string } }) {
+  const product = await getProduct(params.id)
+  if (!product) notFound()
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--cream)' }}>
-      <div className="py-20 text-center border-b" style={{ borderColor: 'rgba(201,169,110,0.2)', background: 'var(--warm-white)' }}>
-        <p className="text-xs tracking-[0.4em] uppercase mb-4" style={{ color: 'var(--gold)' }}>The Collection</p>
-        <h1 className="font-display text-6xl lg:text-7xl font-light" style={{ color: 'var(--charcoal)' }}>
-          All Products
-        </h1>
-        <p className="mt-4 text-sm" style={{ color: 'var(--muted)' }}>
-          {products.length} {products.length === 1 ? 'piece' : 'pieces'} available
-        </p>
-      </div>
-      <div className="max-w-7xl mx-auto px-6 lg:px-12 py-12">
-        {categories.length > 1 && (
-          <div className="flex gap-3 flex-wrap mb-12">
-            {categories.map((cat) => (
-              <button key={cat} className="px-5 py-2 text-xs tracking-[0.2em] uppercase border transition-all duration-200 hover:opacity-70"
-                style={{ borderColor: 'rgba(201,169,110,0.4)', color: 'var(--charcoal)', background: cat === 'All' ? 'rgba(201,169,110,0.1)' : 'transparent' }}>
-                {cat}
-              </button>
-            ))}
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 py-8">
+        <nav className="flex items-center gap-2 text-xs tracking-wider uppercase mb-12" style={{ color: 'var(--muted)' }}>
+          <Link href="/" className="hover:opacity-60 transition-opacity">Home</Link>
+          <span>/</span>
+          <Link href="/products" className="hover:opacity-60 transition-opacity">Products</Link>
+          <span>/</span>
+          <span style={{ color: 'var(--charcoal)' }}>{product.name}</span>
+        </nav>
+
+        <div className="grid lg:grid-cols-2 gap-16 lg:gap-24">
+          {/* Image */}
+          <div className="animate-fade-in">
+            <div className="aspect-square rounded-sm overflow-hidden relative"
+              style={{ background: 'var(--warm-white)', border: '1px solid rgba(201,169,110,0.15)' }}>
+              {product.image_url ? (
+                <Image
+                  src={product.image_url}
+                  alt={product.name}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <span className="font-display text-6xl italic" style={{ color: 'rgba(201,169,110,0.3)' }}>
+                    {product.name[0]}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
-        )}
-        {products.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {products.map((product, i) => (
-              <div key={product.id} className="animate-fade-up" style={{ animationDelay: `${(i % 8) * 60}ms` }}>
-                <ProductCard product={product} />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="py-32 text-center">
-            <p className="font-display text-4xl font-light mb-4" style={{ color: 'var(--muted)' }}>No products yet</p>
-            <p className="text-sm leading-relaxed max-w-md mx-auto" style={{ color: 'var(--muted)' }}>
-              Add products to your Supabase <code className="text-xs bg-stone-100 px-1 py-0.5 rounded">products</code> table to populate this page.
+
+          {/* Details */}
+          <div className="animate-fade-up py-4">
+            {product.category && (
+              <p className="text-xs tracking-[0.4em] uppercase mb-4" style={{ color: 'var(--gold)' }}>{product.category}</p>
+            )}
+            <h1 className="font-display text-5xl lg:text-6xl font-light leading-tight mb-6" style={{ color: 'var(--charcoal)' }}>
+              {product.name}
+            </h1>
+            <p className="font-display text-4xl font-light mb-8" style={{ color: 'var(--charcoal)' }}>
+              ${product.price.toFixed(2)}
             </p>
+
+            <div className="w-12 h-px mb-8" style={{ background: 'rgba(201,169,110,0.4)' }} />
+
+            <p className="text-sm leading-relaxed mb-10" style={{ color: 'var(--muted)', lineHeight: '1.8' }}>
+              {product.description}
+            </p>
+
+            <div className="mb-8">
+              <p className="text-xs tracking-wider uppercase mb-2" style={{ color: product.stock > 0 ? 'var(--gold)' : '#ef4444' }}>
+                {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+              </p>
+            </div>
+
+            <AddToCartButton product={product} />
+
+            <div className="mt-12 pt-8 border-t space-y-3" style={{ borderColor: 'rgba(201,169,110,0.2)' }}>
+              {['Free shipping on orders over $150', '30-day returns, no questions asked', 'Sustainably packaged'].map(item => (
+                <div key={item} className="flex items-center gap-3">
+                  <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: 'var(--gold)' }} />
+                  <span className="text-xs" style={{ color: 'var(--muted)' }}>{item}</span>
+                </div>
+              ))}
+            </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   )
