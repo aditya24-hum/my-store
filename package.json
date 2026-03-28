@@ -1,30 +1,43 @@
 {
-  "name": "modern-ecommerce",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
-  "dependencies": {
-    "@stripe/stripe-js": "^4.0.0",
-    "@supabase/supabase-js": "^2.45.0",
-    "next": "14.2.5",
-    "react": "^18",
-    "react-dom": "^18",
-    "stripe": "^16.0.0"
-  },
-  "devDependencies": {
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "autoprefixer": "^10.0.1",
-    "eslint": "^8",
-    "eslint-config-next": "14.2.5",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5"
-  }
+	"name": "@alloc/quick-lru",
+	"version": "5.2.0",
+	"description": "Simple “Least Recently Used” (LRU) cache",
+	"license": "MIT",
+	"repository": "sindresorhus/quick-lru",
+	"funding": "https://github.com/sponsors/sindresorhus",
+	"author": {
+		"name": "Sindre Sorhus",
+		"email": "sindresorhus@gmail.com",
+		"url": "https://sindresorhus.com"
+	},
+	"engines": {
+		"node": ">=10"
+	},
+	"scripts": {
+		"test": "xo && nyc ava && tsd"
+	},
+	"files": [
+		"index.js",
+		"index.d.ts"
+	],
+	"keywords": [
+		"lru",
+		"quick",
+		"cache",
+		"caching",
+		"least",
+		"recently",
+		"used",
+		"fast",
+		"map",
+		"hash",
+		"buffer"
+	],
+	"devDependencies": {
+		"ava": "^2.0.0",
+		"coveralls": "^3.0.3",
+		"nyc": "^15.0.0",
+		"tsd": "^0.11.0",
+		"xo": "^0.26.0"
+	}
 }
